@@ -54,11 +54,13 @@ export default ({ database, className }: Props) => {
             });
     };
 
-    const phpMyAdmin = () => {
-		location.replace("/pma_redirect.html");
-	};
-	
-	return (
+    // Fonction de redirection sans rafraîchissement
+    const phpMyAdmin = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        window.open("/pma_redirect.html", "_blank");
+    };
+    
+    return (
         <>
             <Formik
                 onSubmit={submit}
@@ -66,52 +68,41 @@ export default ({ database, className }: Props) => {
                 validationSchema={schema}
                 isInitialValid={false}
             >
-                {
-                    ({ isSubmitting, isValid, resetForm }) => (
-                        <Modal
-                            visible={visible}
-                            dismissable={!isSubmitting}
-                            showSpinnerOverlay={isSubmitting}
-                            onDismissed={() => {
-                                setVisible(false);
-                                resetForm();
-                            }}
-                        >
-                            <FlashMessageRender byKey={'database:delete'} css={tw`mb-6`}/>
-                            <h2 css={tw`text-2xl mb-6`}>Confirm database deletion</h2>
-                            <p css={tw`text-sm`}>
-                                Deleting a database is a permanent action, it cannot be undone. This will permanetly
-                                delete the <strong>{database.name}</strong> database and remove all associated data.
-                            </p>
-                            <Form css={tw`m-0 mt-6`}>
-                                <Field
-                                    type={'text'}
-                                    id={'confirm_name'}
-                                    name={'confirm'}
-                                    label={'Confirm Database Name'}
-                                    description={'Enter the database name to confirm deletion.'}
-                                />
-                                <div css={tw`mt-6 text-right`}>
-                                    <Button
-                                        type={'button'}
-                                        isSecondary
-                                        css={tw`mr-2`}
-                                        onClick={() => setVisible(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        type={'submit'}
-                                        color={'red'}
-                                        disabled={!isValid}
-                                    >
-                                        Delete Database
-                                    </Button>
-                                </div>
-                            </Form>
-                        </Modal>
-                    )
-                }
+                {({ isSubmitting, isValid, resetForm }) => (
+                    <Modal
+                        visible={visible}
+                        dismissable={!isSubmitting}
+                        showSpinnerOverlay={isSubmitting}
+                        onDismissed={() => {
+                            setVisible(false);
+                            resetForm();
+                        }}
+                    >
+                        <FlashMessageRender byKey={'database:delete'} css={tw`mb-6`}/>
+                        <h2 css={tw`text-2xl mb-6`}>Confirm database deletion</h2>
+                        <p css={tw`text-sm`}>
+                            Deleting a database is a permanent action, it cannot be undone. This will permanently
+                            delete the <strong>{database.name}</strong> database and remove all associated data.
+                        </p>
+                        <Form css={tw`m-0 mt-6`}>
+                            <Field
+                                type={'text'}
+                                id={'confirm_name'}
+                                name={'confirm'}
+                                label={'Confirm Database Name'}
+                                description={'Enter the database name to confirm deletion.'}
+                            />
+                            <div css={tw`mt-6 text-right`}>
+                                <Button type={'button'} isSecondary css={tw`mr-2`} onClick={() => setVisible(false)}>
+                                    Cancel
+                                </Button>
+                                <Button type={'submit'} color={'red'} disabled={!isValid}>
+                                    Delete Database
+                                </Button>
+                            </div>
+                        </Form>
+                    </Modal>
+                )}
             </Formik>
             <Modal visible={connectionVisible} onDismissed={() => setConnectionVisible(false)}>
                 <FlashMessageRender byKey={'database-connection-modal'} css={tw`mb-6`}/>
@@ -173,7 +164,7 @@ export default ({ database, className }: Props) => {
                     <p css={tw`mt-1 text-2xs text-neutral-500 uppercase select-none`}>Username</p>
                 </div>
                 <div css={tw`ml-8`}>
-				    <Button isSecondary css={tw`mr-2`} onClick={phpMyAdmin}>
+                    <Button isSecondary css={tw`mr-2`} onClick={(e) => phpMyAdmin(e)}>
                         <FontAwesomeIcon icon={faDatabase} fixedWidth/>
                     </Button>
                     <Button isSecondary css={tw`mr-2`} onClick={() => setConnectionVisible(true)}>
