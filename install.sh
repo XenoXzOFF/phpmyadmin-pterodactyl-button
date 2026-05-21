@@ -17,10 +17,10 @@ php /var/www/pterodactyl/artisan down
 # 2. Téléchargement des fichiers
 info "Téléchargement des fichiers..."
 cd /var/www/pterodactyl/resources/scripts/components/server/databases
-wget -qO DatabaseRow.tsx https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
+wget -qO DatabaseRow.tsx https://raw.githubusercontent.com/XenoXzOFF/phpmyadmin-pterodactyl-button/refs/heads/main/files/DatabaseRow.tsx
 
 cd /var/www/pterodactyl/public
-wget -qO pma_redirect.html https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/pma_redirect.html
+wget -qO pma_redirect.html https://raw.githubusercontent.com/XenoXzOFF/phpmyadmin-pterodactyl-button/refs/heads/main/files/pma_redirect.html
 
 # 3. Input domaine
 echo -e "\n${BLUE}--- CONFIGURATION ---${NC}"
