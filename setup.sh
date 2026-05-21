@@ -1,3 +1,4 @@
+apt install yarn -y
 cd /var/www/pterodactyl/resources/scripts/components/server/databases
 rm -rf DatabaseRow.tsx
 wget https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
