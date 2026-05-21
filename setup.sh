@@ -33,13 +33,19 @@ sed -i "s|http:\/\/yourdomain.com\/phpmyadmin|$pmalocation|g" /var/www/pterodact
 info "Domaine configuré : $pmalocation"
 
 # 4. Compilation avec chemin absolu pour éviter l'erreur "run"
-info "Compilation des assets... (cela peut prendre quelques minutes)"
 cd /var/www/pterodactyl
-# On force l'utilisation du binaire yarn ou npm
-if command -v yarn &> /dev/null; then
-    yarn install && yarn run build:production
+
+info "Vérification des dépendances..."
+# On force l'utilisation du gestionnaire de paquets
+if [ -f "/usr/bin/npm" ]; then
+    /usr/bin/npm install
+    /usr/bin/npm run build:production
+elif [ -f "/usr/local/bin/yarn" ]; then
+    /usr/local/bin/yarn install
+    /usr/local/bin/yarn run build:production
 else
-    npm install && npm run build:production
+    error "Ni npm ni yarn n'ont été trouvés dans /usr/bin/ ou /usr/local/bin/."
+    exit 1
 fi
 
 # 5. Remise en ligne
