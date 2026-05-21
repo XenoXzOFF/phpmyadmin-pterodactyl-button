@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.3.1"
+VERSION="1.4.0"
 SCRIPT_NAME="phpmyadmin-pterodactyl-button"
 
 GREEN='\033[0;32m'
@@ -56,11 +56,20 @@ info "Mise en maintenance..."
 php /var/www/pterodactyl/artisan down
 
 info "Préparation et téléchargement..."
-rm -f /var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx
-rm -f /var/www/pterodactyl/public/pma_redirect.html
 
-wget -qO /var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
-wget -qO /var/www/pterodactyl/public/pma_redirect.html https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/pma_redirect.html
+if [ -f "/var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx" ]; then
+    rm -f /var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx
+fi
+
+if [ -f "/var/www/pterodactyl/public/pma_redirect.html" ]; then
+    rm -f /var/www/pterodactyl/public/pma_redirect.html
+fi
+
+mkdir -p /var/www/pterodactyl/resources/scripts/components/server/databases/
+mkdir -p /var/www/pterodactyl/public/
+
+wget -qO /var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx https://raw.githubusercontent.com/XenoXzOFF/phpmyadmin-pterodactyl-button/refs/heads/main/files/DatabaseRow.tsx
+wget -qO /var/www/pterodactyl/public/pma_redirect.html https://raw.githubusercontent.com/XenoXzOFF/phpmyadmin-pterodactyl-button/refs/heads/main/files/pma_redirect.html
 
 echo -e "\n${BLUE}--- CONFIGURATION ---${NC}"
 read -p "URL phpMyAdmin (ex: https://pma.domaine.com) : " pmalocation
