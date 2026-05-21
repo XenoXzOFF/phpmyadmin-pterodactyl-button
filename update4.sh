@@ -1,40 +1,60 @@
 #!/bin/bash
 
-# Fonction pour afficher des messages colorés
-info() { echo -e "\e[32m[INFO]\e[0m $1"; }
-error() { echo -e "\e[31m[ERROR]\e[0m $1"; }
+# Couleurs et style
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # 1. Mise en maintenance
+info "Mise en maintenance du panel..."
 php /var/www/pterodactyl/artisan down
 
-# 2. Mise à jour des fichiers (votre logique actuelle)
+# 2. Téléchargement des fichiers
+info "Téléchargement des fichiers..."
 cd /var/www/pterodactyl/resources/scripts/components/server/databases
-rm -rf DatabaseRow.tsx
-wget -q https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
+wget -qO DatabaseRow.tsx https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
 
 cd /var/www/pterodactyl/public
-rm -rf pma_redirect.html
-wget -q https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/pma_redirect.html
+wget -qO pma_redirect.html https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/pma_redirect.html
 
 # 3. Input domaine
-echo -n "Entrez l'URL de votre phpMyAdmin : "
-read pmalocation
+echo -e "\n${BLUE}--- CONFIGURATION ---${NC}"
+read -p "Entrez l'URL de votre phpMyAdmin (ex: https://pma.domaine.com) : " pmalocation
 sed -i "s|http:\/\/yourdomain.com\/phpmyadmin|$pmalocation|g" /var/www/pterodactyl/public/pma_redirect.html
 
-# 4. Installation automatique de Node.js si nécessaire
+# 4. Installation des dépendances (si nécessaire)
 if ! command -v npm &> /dev/null; then
-    info "Node.js/npm non détecté. Installation en cours..."
+    info "Installation de Node.js/npm..."
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
     apt install -y nodejs > /dev/null 2>&1
-    info "Node.js installé avec succès."
 fi
 
-# 5. Compilation
-info "Compilation des assets..."
+# 5. Compilation forcée (Correction des erreurs ERESOLVE)
+info "Compilation des assets (cela peut prendre du temps)..."
 cd /var/www/pterodactyl
-npm install > /dev/null 2>&1
-npm run build:production > /dev/null 2>&1
 
-# 6. Remise en ligne
+# Nettoyage
+rm -rf node_modules
+rm -rf public/build/*
+
+# Installation avec legacy-peer-deps pour ignorer les conflits React
+npm install --legacy-peer-deps > /dev/null 2>&1
+
+# Build avec Webpack direct
+if [ -f "./node_modules/.bin/webpack" ]; then
+    ./node_modules/.bin/webpack --mode production > /dev/null 2>&1
+else
+    error "La compilation a échoué : Webpack introuvable."
+    php /var/www/pterodactyl/artisan up
+    exit 1
+fi
+
+# 6. Finalisation
 php /var/www/pterodactyl/artisan up
-info "Installation terminée avec succès !"
+success "phpMyAdmin est installé et le panel est prêt !"
+info "N'oubliez pas de vider le cache de votre navigateur (Ctrl + F5) !"
