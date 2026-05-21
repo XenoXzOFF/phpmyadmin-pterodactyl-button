@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.3.0"
+VERSION="1.3.1"
 SCRIPT_NAME="phpmyadmin-pterodactyl-button"
 
 GREEN='\033[0;32m'
@@ -25,34 +25,25 @@ echo -e "${YELLOW}--- Vérification du système ---${NC}"
 
 RAM_TOTAL=$(free -m | awk '/^Mem:/{print $2}')
 if [ "$RAM_TOTAL" -lt 1500 ]; then
-    warn "Mémoire faible détectée (${RAM_TOTAL}Mo). La compilation peut échouer."
+    warn "Mémoire faible (${RAM_TOTAL}Mo). La compilation peut échouer."
 else
     success "Mémoire suffisante (${RAM_TOTAL}Mo)."
 fi
 
-if command -v node &> /dev/null; then
-    success "Node.js $(node -v) est installé."
-else
-    error "Node.js n'est pas installé."
-fi
-
-if command -v npm &> /dev/null; then
-    success "NPM $(npm -v) est installé."
-else
-    error "NPM n'est pas installé."
-fi
+command -v node &> /dev/null && success "Node.js est installé." || error "Node.js n'est pas installé."
+command -v npm &> /dev/null && success "NPM est installé." || error "NPM n'est pas installé."
 
 if [ -d "/var/www/pterodactyl" ]; then
     success "Répertoire Pterodactyl trouvé."
 else
-    error "Répertoire /var/www/pterodactyl introuvable. Installation impossible."
+    error "Répertoire /var/www/pterodactyl introuvable."
     exit 1
 fi
 
 echo -e "\n${YELLOW}Informations :${NC}"
-echo -e "- Modifie DatabaseRow.tsx"
-echo -e "- Crée une redirection pma_redirect.html"
-echo -e "- Recompile les assets"
+echo -e "- Téléchargement des composants"
+echo -e "- Configuration de l'URL"
+echo -e "- Compilation des assets"
 echo -e ""
 
 read -p "Voulez-vous lancer l'installation ? (y/n) : " confirm
@@ -64,12 +55,12 @@ fi
 info "Mise en maintenance..."
 php /var/www/pterodactyl/artisan down
 
-info "Téléchargement des composants..."
-cd /var/www/pterodactyl/resources/scripts/components/server/databases
-wget -qO DatabaseRow.tsx https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
+info "Préparation et téléchargement..."
+rm -f /var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx
+rm -f /var/www/pterodactyl/public/pma_redirect.html
 
-cd /var/www/pterodactyl/public
-wget -qO pma_redirect.html https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/pma_redirect.html
+wget -qO /var/www/pterodactyl/resources/scripts/components/server/databases/DatabaseRow.tsx https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/DatabaseRow.tsx
+wget -qO /var/www/pterodactyl/public/pma_redirect.html https://raw.githubusercontent.com/finnie2006/PteroFreeStuffinstaller/main/resources/phpmyadmin/pma_redirect.html
 
 echo -e "\n${BLUE}--- CONFIGURATION ---${NC}"
 read -p "URL phpMyAdmin (ex: https://pma.domaine.com) : " pmalocation
@@ -89,4 +80,4 @@ npm install --legacy-peer-deps > /dev/null 2>&1
 ./node_modules/.bin/webpack --mode production > /dev/null 2>&1
 
 php /var/www/pterodactyl/artisan up
-success "Installation terminée !"
+success "Installation terminée avec succès !"
